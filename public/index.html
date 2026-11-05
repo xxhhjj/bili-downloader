@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BiliTools-Lite · B 站资源下载</title>
+<style>
+  :root { --bg:#f5f7fa; --card:#fff; --line:#e6e8eb; --txt:#1f2329; --sub:#8a919f; --brand:#fb7299; --brand-d:#e85d86; --ok:#2ba471; --err:#d4380d; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; background:var(--bg); color:var(--txt); }
+  .wrap { max-width:860px; margin:0 auto; padding:24px 18px 60px; }
+  .top { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  .tip { color:var(--sub); font-size:13px; margin-bottom:18px; line-height:1.6; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; margin-bottom:16px; }
+  .card h3 { font-size:14px; margin:0 0 12px; font-weight:600; }
+  label { display:block; font-size:13px; color:var(--sub); margin-bottom:6px; }
+  input[type=text] { width:100%; padding:11px 12px; border:1px solid var(--line); border-radius:8px; font-size:14px; outline:none; }
+  input[type=text]:focus { border-color:var(--brand); }
+  .row { display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; }
+  .row > div { flex:1; min-width:180px; }
+  button { cursor:pointer; border:none; border-radius:8px; font-size:14px; padding:11px 18px; font-weight:600; transition:.15s; }
+  .btn-primary { background:var(--brand); color:#fff; }
+  .btn-primary:hover { background:var(--brand-d); }
+  .btn-primary:disabled { background:#f3c2d2; cursor:not-allowed; }
+  .btn-ghost { background:#eef0f3; color:var(--txt); }
+  .btn-ghost:hover { background:#e3e6ea; }
+  .btn-sm { padding:7px 12px; font-size:13px; font-weight:500; }
+  .meta { display:flex; gap:16px; align-items:center; }
+  .meta img { width:160px; height:100px; object-fit:cover; border-radius:8px; background:#eee; }
+  .meta h2 { font-size:17px; margin:0 0 6px; }
+  .meta .sub { color:var(--sub); font-size:13px; line-height:1.7; }
+  .pages { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 8px; }
+  .page-item { display:flex; align-items:center; gap:6px; background:#eef0f3; border:1px solid transparent; border-radius:8px; padding:6px 10px; font-size:13px; user-select:none; }
+  .page-item.active { border-color:var(--brand); background:#fff0f5; }
+  .page-item.checked { border-color:var(--brand-d); }
+  .page-item input[type=checkbox] { width:14px; height:14px; margin:0; cursor:pointer; accent-color:var(--brand); }
+  .page-item .ep-title { cursor:pointer; color:var(--txt); }
+  .page-item.active .ep-title { color:var(--brand-d); font-weight:600; }
+  .page-item .ep-dur { color:var(--sub); font-size:12px; }
+  .pages-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:4px 0 10px; }
+  .pages-toolbar label { display:flex; align-items:center; gap:5px; margin:0; color:var(--txt); cursor:pointer; font-size:13px; }
+  .pages-toolbar input[type=checkbox] { width:14px; height:14px; margin:0; accent-color:var(--brand); }
+  .opt-group { margin:14px 0; }
+  .opt-group h3 { font-size:14px; margin:0 0 8px; }
+  .opts { display:flex; flex-wrap:wrap; gap:8px; }
+  .opt { border:1px solid var(--line); background:#fff; border-radius:8px; padding:8px 12px; font-size:13px; cursor:pointer; }
+  .opt.active { border-color:var(--brand); background:#fff0f5; color:var(--brand-d); font-weight:600; }
+  .opt small { color:var(--sub); margin-left:6px; }
+  .opt.active small { color:var(--brand-d); }
+  .opts.dim { opacity:.4; pointer-events:none; }
+  .progress { margin-top:10px; }
+  .bar { height:10px; background:#eef0f3; border-radius:6px; overflow:hidden; }
+  .bar > i { display:block; height:100%; width:0; background:var(--brand); transition:width .3s; }
+  .stage { font-size:13px; color:var(--sub); margin-top:6px; }
+  .warn { background:#fff7e6; border:1px solid #ffe1a1; color:#ad6800; padding:10px 12px; border-radius:8px; font-size:13px; margin:10px 0; }
+  .err { color:var(--err); font-size:13px; margin-top:8px; }
+  .mask { position:fixed; inset:0; background:rgba(0,0,0,.4); display:none; align-items:center; justify-content:center; z-index:50; }
+  .mask.show { display:flex; }
+  .modal { background:#fff; border-radius:14px; padding:22px; width:380px; max-width:90vw; }
+  .modal h3 { margin:0 0 12px; font-size:17px; }
+  .modal p { font-size:14px; color:var(--txt); line-height:1.7; margin:6px 0; }
+  .modal .acts { display:flex; gap:10px; justify-content:flex-end; margin-top:18px; }
+  .badge { display:inline-block; background:#eef0f3; border-radius:6px; padding:2px 8px; font-size:12px; color:var(--sub); margin-right:6px; }
+  .badge.ok { background:#e8f7f0; color:var(--ok); }
+  .btn-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:4px; align-items:center; }
+  .bitem { display:flex; justify-content:space-between; gap:12px; padding:7px 0; border-bottom:1px solid var(--line); font-size:13px; }
+  .bitem:last-child { border-bottom:none; }
+  .bitem .bt { color:var(--txt); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .bitem .bs { color:var(--sub); flex-shrink:0; text-align:right; }
+  .bitem a, .jitem a { color:var(--brand); text-decoration:none; font-weight:600; }
+  .jitem { display:flex; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px solid var(--line); font-size:13px; align-items:center; }
+  .jitem:last-child { border-bottom:none; }
+  .jitem .jt { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:430px; }
+  .jitem .js { color:var(--sub); flex-shrink:0; }
+  #qrBox { width:210px; height:210px; margin:6px auto 10px; display:flex; align-items:center; justify-content:center; background:#fff; border:1px solid var(--line); border-radius:10px; padding:5px; }
+  #qrBox img, #qrBox canvas { width:200px !important; height:200px !important; }
+  .hint { font-size:12px; color:var(--sub); line-height:1.6; }
+  select { padding:9px 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:#fff; color:var(--txt); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>BiliTools-Lite · B 站资源下载</h1>
+      <div class="tip">桌面版 · 任务持久化 · 扫码登录 · aria2 多连接</div>
+    </div>
+    <div id="engineBadges"><span class="badge">检测引擎中…</span></div>
+  </div>
+
+  <div class="card">
+    <h3>登录与连接</h3>
+    <div class="row">
+      <div>
+        <label>SESSDATA / Cookie（可选，扫码登录后自动填入）</label>
+        <input id="cookie" type="text" placeholder="SESSDATA=xxxx; ..." />
+      </div>
+      <div style="flex:0 0 auto; display:flex; gap:8px;">
+        <button id="qrBtn" class="btn-ghost">扫码登录</button>
+        <button id="logoutBtn" class="btn-ghost">退出登录</button>
+      </div>
+    </div>
+    <div class="row" style="margin-top:12px;">
+      <div>
+        <label>视频链接</label>
+        <input id="url" type="text" placeholder="https://www.bilibili.com/video/BV..." />
+      </div>
+      <div style="flex:0 0 auto;">
+        <label>下载引擎</label>
+        <select id="engine">
+          <option value="aria2">aria2 多连接</option>
+          <option value="fetch">单连接直连</option>
+        </select>
+      </div>
+    </div>
+    <div style="height:14px"></div>
+    <button id="parseBtn" class="btn-primary">解析视频</button>
+    <button id="folderBtn" class="btn-ghost">打开下载目录</button>
+    <div id="parseErr" class="err"></div>
+    <div class="hint" style="margin-top:10px;">未登录最高 480P；登录后按账号权限解锁 1080P / 4K 等。仅下载自己有权访问的内容。</div>
+  </div>
+
+  <div id="result" style="display:none">
+    <div class="card">
+      <div class="meta">
+        <img id="cover" alt="cover" referrerpolicy="no-referrer" />
+        <div>
+          <h2 id="title"></h2>
+          <div class="sub">
+            <span class="badge" id="owner"></span>
+            <span class="badge" id="dur"></span>
+            <span class="badge" id="epBadge"></span>
+            <span class="badge" id="bvid"></span>
+          </div>
+        </div>
+      </div>
+      <div id="pagesWrap" class="pages" style="display:none"></div>
+      <div id="pagesToolbar" class="pages-toolbar" style="display:none">
+        <label><input type="checkbox" id="selectAll"> 全选</label>
+        <span class="hint" id="selCount">已选 0 集</span>
+        <button id="dlSelectedBtn" class="btn-primary btn-sm" disabled>下载选中</button>
+        <button id="clearSelBtn" class="btn-ghost btn-sm">清空</button>
+        <span class="hint">点击集名切换当前集，勾选复选框可多选下载</span>
+      </div>
+      <div id="loginWarn" class="warn" style="display:none"></div>
+      <div class="hint" id="mediaHint" style="margin-top:6px;"></div>
+    </div>
+
+    <div class="card">
+      <div class="opt-group">
+        <h3>视频清晰度</h3>
+        <div id="videoOpts" class="opts"></div>
+      </div>
+      <div class="opt-group">
+        <h3>音轨</h3>
+        <div id="audioOpts" class="opts"></div>
+      </div>
+      <div class="opt-group">
+        <h3>下载内容</h3>
+        <div id="modeOpts" class="opts">
+          <div class="opt active" data-mode="both">音视频合并 <small>mp4</small></div>
+          <div class="opt" data-mode="video">仅视频 <small>无声 mp4</small></div>
+          <div class="opt" data-mode="audio">仅音频 <small>m4a</small></div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button id="dlBtn" class="btn-primary" disabled>下载（含确认）</button>
+        <button id="dlAllBtn" class="btn-ghost" disabled>下载全部（整季/全部分P）</button>
+      </div>
+      <div class="progress" id="progressBox" style="display:none">
+        <div class="bar"><i id="bar"></i></div>
+        <div class="stage" id="stage"></div>
+      </div>
+      <div class="progress" id="batchBox" style="display:none; margin-top:14px;">
+        <div style="font-size:13px;color:var(--sub);margin-bottom:6px;">批量下载队列</div>
+        <div id="batchList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="top" style="margin-bottom:6px;">
+      <h3 style="margin:0;">任务历史（重启后保留）</h3>
+      <button id="refreshJobs" class="btn-ghost btn-sm">刷新</button>
+    </div>
+    <div id="jobList"><div class="hint">加载中…</div></div>
+  </div>
+</div>
+
+<div class="mask" id="mask">
+  <div class="modal">
+    <h3>确认下载</h3>
+    <p id="cTitle"></p>
+    <p id="cInfo"></p>
+    <div class="acts">
+      <button class="btn-ghost" id="cancelBtn">取消</button>
+      <button class="btn-primary" id="okBtn">确认下载</button>
+    </div>
+  </div>
+</div>
+
+<div class="mask" id="qrMask">
+  <div class="modal" style="width:320px; text-align:center;">
+    <h3>扫码登录 B 站</h3>
+    <div id="qrBox"></div>
+    <p id="qrStatus" style="font-size:13px;color:var(--sub);">正在生成二维码…</p>
+    <div class="acts" style="justify-content:center;">
+      <button class="btn-ghost" id="qrClose">关闭</button>
+    </div>
+  </div>
+</div>
+
+<script src="qrcode.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const API = (location.protocol === 'http:' || location.protocol === 'https:') ? location.origin : 'http://127.0.0.1:3000';
+const api = p => API + p;
+let state = { streams:null, video:null, audio:null, filename:'', mode:'both' };
+const MODE_NAME = { both:'音视频合并 (mp4)', video:'仅视频 (无声 mp4)', audio:'仅音频 (m4a)' };
+let qrTimer = null;
+
+// ---------- 引擎状态 ----------
+async function loadEngine(){
+  try {
+    const j = await (await fetch(api('/api/engine'))).json();
+    const a = j.engines.find(e => e.id === 'aria2');
+    $('engineBadges').innerHTML =
+      `<span class="badge ${a.available?'ok':''}">aria2 ${a.available?'可用':'回退单连接'}</span>` +
+      `<span class="badge ${j.sqlite?'ok':''}">${j.sqlite?'SQLite 持久化':'内存队列'}</span>`;
+    if (!a.available) { $('engine').value = 'fetch'; $('engine').disabled = true; }
+  } catch(e){ $('engineBadges').innerHTML = '<span class="badge">后端状态未知</span>'; }
+}
+
+// ---------- 登录态 ----------
+async function loadAuth(){
+  try {
+    const j = await (await fetch(api('/api/auth'))).json();
+    if (j.loggedIn && !$('cookie').value.trim()) $('cookie').value = j.cookie;
+  } catch {}
+}
+$('logoutBtn').onclick = async () => {
+  await fetch(api('/api/auth/logout'), { method:'POST' }).catch(()=>{});
+  $('cookie').value = '';
+  localStorage.removeItem('bili_cookie');
+};
+
+// ---------- 扫码登录 ----------
+$('qrBtn').onclick = () => { $('qrMask').classList.add('show'); startQr(); };
+$('qrClose').onclick = () => { $('qrMask').classList.remove('show'); stopQr(); };
+async function startQr(){
+  stopQr();
+  $('qrBox').innerHTML = '';
+  $('qrStatus').textContent = '正在生成二维码…';
+  try {
+    const j = await (await fetch(api('/api/qr/generate'))).json();
+    if (!j.ok) throw new Error(j.error || '生成失败');
+    new QRCode($('qrBox'), { text:j.url, width:200, height:200, colorDark:'#1f2329', colorLight:'#ffffff', correctLevel:QRCode.CorrectLevel.M });
+    $('qrStatus').textContent = '请用 B 站 App 扫描二维码';
+    let tries = 0;
+    qrTimer = setInterval(async () => {
+      if (++tries > 120) { stopQr(); $('qrStatus').textContent = '二维码已超时，请重新打开'; return; }
+      try {
+        const p = await (await fetch(api('/api/qr/poll?key=' + encodeURIComponent(j.key)))).json();
+        if (p.status === 'scanned') $('qrStatus').textContent = '已扫描，请在手机上确认登录';
+        else if (p.status === 'expired') { startQr(); return; }
+        else if (p.status === 'success') {
+          stopQr();
+          $('cookie').value = p.cookie || '';
+          localStorage.setItem('bili_cookie', p.cookie || '');
+          $('qrStatus').textContent = '登录成功';
+          setTimeout(() => $('qrMask').classList.remove('show'), 800);
+        }
+      } catch {}
+    }, 1500);
+  } catch(e){ $('qrStatus').textContent = '生成失败：' + e.message; }
+}
+function stopQr(){ if (qrTimer) { clearInterval(qrTimer); qrTimer = null; } }
+
+// ---------- 解析 ----------
+$('parseBtn').onclick = async () => {
+  const url = $('url').value.trim();
+  if (!url) return;
+  $('parseErr').textContent = '';
+  $('parseBtn').disabled = true;
+  $('parseBtn').textContent = '解析中…';
+  try {
+    const cookie = $('cookie').value.trim();
+    const r = await fetch(api('/api/parse?url=' + encodeURIComponent(url) + (cookie ? '&cookie=' + encodeURIComponent(cookie) : '')));
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || '解析失败');
+    selectedPages.clear();
+    render(j);
+  } catch (e) { $('parseErr').textContent = '错误：' + e.message; }
+  finally { $('parseBtn').disabled = false; $('parseBtn').textContent = '解析视频'; }
+};
+function fmtDur(s){
+  s = Math.max(0, Math.round(Number(s) || 0));
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60;
+  return h ? `${h}小时${m}分${ss}秒` : `${m}分${ss}秒`;
+}
+
+let selectedPages = new Set();
+
+function render(j){
+  state.streams = j.streams;
+  $('title').textContent = j.title;
+  if (j.cover) { $('cover').src = api('/api/cover?url=' + encodeURIComponent(j.cover)); $('cover').style.visibility = 'visible'; }
+  else $('cover').style.visibility = 'hidden';
+  $('cover').onerror = () => { $('cover').style.visibility = 'hidden'; };
+  const countLabel = j.unit === '版本'
+    ? `共 ${j.pageCount} 个版本`
+    : `共 ${j.pageCount} ${j.unit || '集'}`;
+  $('owner').textContent = j.kind === 'bangumi'
+    ? `${j.typeName || '影视'} · ${countLabel}`
+    : ('UP: ' + (j.owner || '-'));
+  $('dur').textContent = '时长 ' + fmtDur(j.duration);
+  $('epBadge').textContent = j.episodeLabel || '';
+  $('epBadge').style.display = j.pageCount > 1 ? 'inline-block' : 'none';
+  $('bvid').textContent = j.bvid;
+  $('bvid').title = j.mediaTitle || '';
+  $('mediaHint').textContent = j.kind === 'bangumi'
+    ? 'B 站影视/番剧走 PGC 体系：单集为 ep 编号、整部为 ss 编号；此处显示该集对应的 BV 稿件号，悬停可查看 ep / ss / 媒体 ID。'
+    : '普通视频稿件使用 BV 编号；影视/番剧等内容则使用 PGC 的 ep / ss 编号。';
+  $('result').style.display = 'block';
+  renderPages(j);
+  const qName = qLabel(j.maxQuality);
+  if (!j.hdAvailable){
+    $('loginWarn').style.display = 'block';
+    $('loginWarn').textContent = '当前最高 ' + qName + '（未登录）。如需 720P/1080P+，请扫码登录后重新解析。';
+  } else $('loginWarn').style.display = 'none';
+  buildOpts(j);
+  applyMode();
+}
+
+function applyMode(){
+  document.querySelectorAll('#modeOpts .opt').forEach(el =>
+    el.classList.toggle('active', el.dataset.mode === state.mode));
+  $('videoOpts').classList.toggle('dim', state.mode === 'audio');
+  $('audioOpts').classList.toggle('dim', state.mode === 'video');
+}
+document.querySelectorAll('#modeOpts .opt').forEach(el => {
+  el.onclick = () => { state.mode = el.dataset.mode; applyMode(); };
+});
+
+function renderPages(j){
+  const wrap = $('pagesWrap'), bar = $('pagesToolbar');
+  if (j.pageCount <= 1){ wrap.style.display = 'none'; bar.style.display = 'none'; return; }
+  wrap.style.display = 'flex';
+  bar.style.display = 'flex';
+  wrap.innerHTML = '';
+  j.pages.forEach((pg, i) => {
+    const item = document.createElement('div');
+    item.className = 'page-item' + (i === j.currentPage ? ' active' : '') + (selectedPages.has(i) ? ' checked' : '');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.className = 'ep-check';
+    cb.checked = selectedPages.has(i);
+    cb.onchange = () => {
+      if (cb.checked) selectedPages.add(i); else selectedPages.delete(i);
+      item.classList.toggle('checked', cb.checked);
+      updateSelUI(j.pageCount);
+    };
+    const t = document.createElement('span');
+    t.className = 'ep-title';
+    t.textContent = pg.part;
+    t.onclick = () => switchPage(i);
+    const d = document.createElement('span');
+    d.className = 'ep-dur';
+    d.textContent = pg.duration ? '(' + fmtDur(pg.duration) + ')' : '';
+    item.append(cb, t, d);
+    wrap.appendChild(item);
+  });
+  updateSelUI(j.pageCount);
+}
+function updateSelUI(total){
+  const n = selectedPages.size;
+  $('selCount').textContent = `已选 ${n} / ${total} 集`;
+  $('dlSelectedBtn').disabled = n === 0;
+  $('dlSelectedBtn').textContent = `下载选中 (${n})`;
+  $('selectAll').checked = n === total;
+}
+$('selectAll').onchange = e => {
+  const total = $('pagesWrap').children.length;
+  selectedPages.clear();
+  if (e.target.checked) for (let i = 0; i < total; i++) selectedPages.add(i);
+  $('pagesWrap').querySelectorAll('.ep-check').forEach((cb, i) => {
+    cb.checked = selectedPages.has(i);
+    cb.closest('.page-item').classList.toggle('checked', cb.checked);
+  });
+  updateSelUI(total);
+};
+$('clearSelBtn').onclick = () => {
+  selectedPages.clear();
+  $('pagesWrap').querySelectorAll('.ep-check').forEach(cb => {
+    cb.checked = false;
+    cb.closest('.page-item').classList.remove('checked');
+  });
+  updateSelUI($('pagesWrap').children.length);
+};
+
+async function switchPage(idx){
+  const url = $('url').value.trim(), cookie = $('cookie').value.trim();
+  $('parseBtn').disabled = true;
+  try {
+    const r = await fetch(api('/api/parse?url=' + encodeURIComponent(url) + '&page=' + idx + (cookie ? '&cookie=' + encodeURIComponent(cookie) : '')));
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error);
+    render(j);
+  } catch(e){ alert('切换分集失败：' + e.message); }
+  finally { $('parseBtn').disabled = false; }
+}
+function qLabel(id){ return {127:'8K',126:'杜比视界',125:'HDR',120:'4K',116:'1080P60',112:'1080P+',80:'1080P',64:'720P',32:'480P',16:'360P'}[id] || ('qn'+id); }
+function buildOpts(j){
+  const v = j.streams ? j.streams.video : [], a = j.streams ? j.streams.audio : [];
+  $('videoOpts').innerHTML = ''; $('audioOpts').innerHTML = '';
+  if (!v.length){ $('dlBtn').disabled = true; $('dlAllBtn').disabled = true; return; }
+  v.forEach((item, i) => {
+    const el = document.createElement('div');
+    el.className = 'opt' + (i===0?' active':'');
+    el.innerHTML = qLabel(item.id) + ' <small>' + (item.codecs||'').split('.')[0] + ' · ' + Math.round(item.bandwidth/1000) + 'k</small>';
+    el.onclick = () => { document.querySelectorAll('#videoOpts .opt').forEach(o=>o.classList.remove('active')); el.classList.add('active'); state.video = item; };
+    $('videoOpts').appendChild(el);
+  });
+  a.forEach((item, i) => {
+    const el = document.createElement('div');
+    el.className = 'opt' + (i===0?' active':'');
+    el.innerHTML = Math.round(item.bandwidth/1000) + 'kbps <small>' + (item.codecs||'') + '</small>';
+    el.onclick = () => { document.querySelectorAll('#audioOpts .opt').forEach(o=>o.classList.remove('active')); el.classList.add('active'); state.audio = item; };
+    $('audioOpts').appendChild(el);
+  });
+  state.video = v[0]; state.audio = a[0];
+  $('dlBtn').disabled = false; $('dlAllBtn').disabled = false;
+}
+
+// ---------- 单个下载 ----------
+$('dlBtn').onclick = () => {
+  const vEl = document.querySelector('#videoOpts .opt.active');
+  const aEl = document.querySelector('#audioOpts .opt.active');
+  const vIdx = vEl ? [...$('videoOpts').children].indexOf(vEl) : -1;
+  const aIdx = aEl ? [...$('audioOpts').children].indexOf(aEl) : -1;
+  state.video = (state.streams && state.streams.video[vIdx]) || null;
+  state.audio = (state.streams && state.streams.audio[aIdx]) || null;
+  const suffix = (state.mode !== 'audio' && state.video) ? '_' + qLabel(state.video.id) : '';
+  state.filename = $('title').textContent + suffix;
+  $('cTitle').textContent = '《' + $('title').textContent + '》';
+  const vInfo = state.video ? '清晰度：<b>' + qLabel(state.video.id) + '</b> · ' : '';
+  const aInfo = state.audio ? '音轨：<b>' + Math.round(state.audio.bandwidth/1000) + 'kbps</b><br/>' : '';
+  $('cInfo').innerHTML = vInfo + aInfo
+    + '下载内容：<b>' + MODE_NAME[state.mode] + '</b><br/>'
+    + '引擎：<b>' + ($('engine').value==='aria2'?'aria2 多连接':'单连接直连') + '</b><br/>是否继续？';
+  $('mask').classList.add('show');
+};
+$('cancelBtn').onclick = () => $('mask').classList.remove('show');
+$('okBtn').onclick = () => { $('mask').classList.remove('show'); startDownload(); };
+
+async function startDownload(){
+  $('progressBox').style.display = 'block';
+  $('bar').style.width = '0%';
+  $('stage').textContent = '创建任务…';
+  $('dlBtn').disabled = true;
+  try {
+    const r = await fetch(api('/api/download'), {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        videoUrl: state.video ? state.video.baseUrl : '',
+        audioUrl: state.audio ? state.audio.baseUrl : '',
+        filename: state.filename, cookie: $('cookie').value.trim(),
+        engine: $('engine').value, mode: state.mode
+      })
+    });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error);
+    await followProgress(j.jobId);
+  } catch(e){ $('stage').textContent = '错误：' + e.message; $('dlBtn').disabled = false; }
+}
+function followProgress(jobId){
+  return new Promise((resolve) => {
+    const es = new EventSource(api('/api/progress?job=' + jobId));
+    es.onmessage = (ev) => {
+      const d = JSON.parse(ev.data);
+      $('stage').textContent = d.stage + (d.percent!=null ? ' · ' + d.percent + '%' : '');
+      if (d.percent != null) $('bar').style.width = d.percent + '%';
+      if (d.done){
+        es.close();
+        if (d.error){ $('stage').textContent = '失败：' + d.error; $('dlBtn').disabled = false; resolve(); return; }
+        // 文件已由服务端保存到本地 downloads/，无需再让浏览器另存一份
+        $('stage').textContent = '完成 ✓ 已保存到 downloads/（点"打开下载目录"查看）';
+        $('dlBtn').disabled = false;
+        loadJobs();
+        resolve();
+      }
+    };
+    es.onerror = () => { es.close(); resolve(); };
+  });
+}
+
+// ---------- 批量下载 ----------
+let batchIds = [], batchTimer = null;
+async function startBatch(indices){
+  const url = $('url').value.trim(), cookie = $('cookie').value.trim();
+  const qn = state.video ? state.video.id : null;
+  $('dlAllBtn').disabled = true;
+  $('dlSelectedBtn').disabled = true;
+  $('batchBox').style.display = 'block';
+  $('batchList').innerHTML = '<div class="stage">正在' + (indices ? '解析选中的 ' + indices.length + ' 集' : '获取分集列表') + '…</div>';
+  $('batchBox').scrollIntoView({ behavior:'smooth', block:'nearest' });
+  try {
+    const r = await fetch(api('/api/download-all'), {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, cookie, qn, engine: $('engine').value, mode: state.mode, indices: indices || null })
+    });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error);
+    batchIds = j.jobIds || [];
+    renderBatchList(j.items || []);
+    if (batchIds.length) pollBatch(); else $('batchList').innerHTML = '<div class="err">没有可下载的分集</div>';
+    loadJobs();
+  } catch (e) { $('batchList').innerHTML = '<div class="err">批量下载失败：' + e.message + '</div>'; }
+  finally {
+    $('dlAllBtn').disabled = false;
+    updateSelUI($('pagesWrap').children.length || 0);
+  }
+}
+$('dlAllBtn').onclick = () => startBatch(null);
+$('dlSelectedBtn').onclick = () => startBatch([...selectedPages].sort((a, b) => a - b));
+function renderBatchList(items) {
+  $('batchList').innerHTML = '';
+  items.forEach(it => {
+    const d = document.createElement('div');
+    d.className = 'bitem';
+    d.id = 'bitem_' + (it.id || ('x' + Math.random().toString(36).slice(2)));
+    const no = it.pos != null ? String(it.pos + 1).padStart(2, '0') + '. ' : '';
+    const title = no + (it.title || ('第' + ((it.index || 0) + 1) + '集'));
+    let status = '排队中…';
+    if (it.error) status = '<span style="color:var(--err)">失败: ' + it.error + '</span>';
+    else if (it.skip) status = '<span style="color:var(--sub)">' + it.skip + '</span>';
+    d.innerHTML = '<span class="bt">' + title + '</span><span class="bs">' + status + '</span>';
+    $('batchList').appendChild(d);
+  });
+}
+async function pollBatch() {
+  if (!batchIds.length) return;
+  try {
+    const j = await (await fetch(api('/api/batch?ids=' + encodeURIComponent(batchIds.join(','))))).json();
+    let allDone = true;
+    (j.jobs || []).forEach(job => {
+      const el = document.getElementById('bitem_' + job.id);
+      if (!el) return;
+      const bs = el.querySelector('.bs');
+      if (job.gone) { bs.textContent = '任务已失效'; return; }
+      if (job.done) {
+        if (job.error) bs.innerHTML = '<span style="color:var(--err)">失败: ' + job.error + '</span>';
+        else bs.innerHTML = '<span class="dl-link" data-job="' + job.id + '">打开</span>';
+      } else {
+        allDone = false;
+        bs.textContent = (job.stage || '处理中') + (job.percent != null ? ' ' + job.percent + '%' : '');
+      }
+    });
+    if (!allDone) batchTimer = setTimeout(pollBatch, 1500);
+    else loadJobs();
+  } catch (e) { batchTimer = setTimeout(pollBatch, 2000); }
+}
+
+// ---------- 任务历史 ----------
+async function loadJobs(){
+  try {
+    const j = await (await fetch(api('/api/jobs'))).json();
+    const rows = j.jobs || [];
+    if (!rows.length) { $('jobList').innerHTML = '<div class="hint">暂无任务。下载记录会写入本地 SQLite，重启后仍可查看。</div>'; return; }
+    $('jobList').innerHTML = rows.map(r => {
+      const t = new Date(r.createdAt).toLocaleString('zh-CN', { hour12:false });
+      let s = r.done ? (r.error ? '<span style="color:var(--err)">失败</span>' : '完成') : (r.stage || '排队中');
+      if (!r.done && r.percent) s += ' ' + r.percent + '%';
+      const link = r.hasFile ? '<span class="dl-link" data-job="' + r.id + '">打开</span>' : '';
+      return '<div class="jitem"><span class="jt" title="' + t + '">' + (r.filename || r.id) + '</span><span class="js">' + s + ' ' + link + '</span></div>';
+    }).join('');
+  } catch(e){ $('jobList').innerHTML = '<div class="hint">历史加载失败</div>'; }
+}
+$('refreshJobs').onclick = loadJobs;
+$('folderBtn').onclick = () => fetch(api('/api/open-folder')).catch(()=>{});
+// "打开"链接：调用后端打开资源管理器并定位文件（避免浏览器再另存一份）
+document.addEventListener('click', e => {
+  const t = e.target.closest('.dl-link');
+  if (t) { e.preventDefault(); fetch(api('/api/open-folder?job=' + t.dataset.job)).catch(()=>{}); }
+});
+
+// ---------- 启动 ----------
+loadEngine();
+loadAuth();
+loadJobs();
+setInterval(loadJobs, 15000);
+</script>
+</body>
+</html>

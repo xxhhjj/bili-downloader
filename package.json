@@ -1,0 +1,13 @@
+{
+  "name": "bilitools-lite",
+  "version": "1.0.0",
+  "description": "BiliTools 桌面版复刻：Node 零依赖后端 + SQLite 持久队列 + aria2c 多连接 + 扫码登录",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "desktop": "node desktop.js",
+    "tauri": "npx @tauri-apps/cli@latest tauri dev",
+    "tauri:build": "npx @tauri-apps/cli@latest tauri build"
+  },
+  "engines": { "node": ">=22" }
+}

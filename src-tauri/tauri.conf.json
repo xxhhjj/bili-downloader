@@ -1,0 +1,32 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "BiliTools-Lite",
+  "version": "1.0.0",
+  "identifier": "com.local.bilitools-lite",
+  "build": {
+    "devUrl": "http://127.0.0.1:3000",
+    "frontendDist": "../public"
+  },
+  "app": {
+    "withGlobalTauri": false,
+    "windows": [],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/icon.ico",
+      "icons/icon.png"
+    ],
+    "resources": {
+      "../server.js": "server.js",
+      "../public/index.html": "public/index.html",
+      "../public/qrcode.min.js": "public/qrcode.min.js",
+      "../public/favicon.ico": "public/favicon.ico",
+      "../bin/": "bin/"
+    }
+  }
+}
